@@ -52,8 +52,8 @@ Long story short. Create Random Public Address (RPA) and check one by one with t
 
 
 # REQUIREMENTS
-Python 3.x (i use 3.6.5)
-pip install ecdsa
+<li>Python 3.x (i use 3.9)</li>
+<li>pip install ecdsa</li>
 pip install base58
 pip install mysql-connector-python
 pip install pandas (If error "pip uninstall numpy" then "pip install numpy==1.19.3")

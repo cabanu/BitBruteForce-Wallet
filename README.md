@@ -7,8 +7,9 @@ If the address isn't present in te database -> nothing happens. If the address i
 
 If you like it, buy me a coffee: 3Mnf8w4oPKFyknsnAwww6kaBdMxXDQc8M4
 
+# To test the output
 Enable MySQL logging: 
-SET global general_log = 1;
+SET global general_log = 1;<br>
 SET global log_output = 'table';
 
 View log:

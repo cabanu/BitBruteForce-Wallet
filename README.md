@@ -7,8 +7,34 @@ If the address isn't present in te database -> nothing happens. If the address i
 
 If you like it, buy me a coffee: 3Mnf8w4oPKFyknsnAwww6kaBdMxXDQc8M4
 
+Enable MySQL logging: 
+SET global general_log = 1;
+SET global log_output = 'table';
+
+View log:
+select * from mysql.general_log;
+
+Disable log:
+SET global general_log = 0;
+
+Clear log:
+TRUNCATE mysql.general_log
+
+Don't forget to disable the log!
+
 # MySQL:
-CREATE TABLE btc ( address VARCHAR(100) NOT NULL COLLATE 'utf8mb4_general_ci', secret VARCHAR(100) NULL DEFAULT NULL COLLATE 'utf8mb4_general_ci', PRIMARY KEY (address) USING BTREE, UNIQUE INDEX address (address) USING BTREE, INDEX secret (secret) USING BTREE ) COLLATE='utf8mb4_general_ci' ENGINE=InnoDB ;
+
+CREATE TABLE `btc` (
+	`address` VARCHAR(50) NOT NULL COLLATE 'utf8mb4_general_ci',
+	`secret` VARCHAR(100) NULL DEFAULT NULL COLLATE 'utf8mb4_general_ci',
+	PRIMARY KEY (`address`) USING BTREE,
+	UNIQUE INDEX `address` (`address`) USING BTREE,
+	INDEX `secret` (`secret`) USING BTREE
+)
+COLLATE='utf8mb4_general_ci'
+ENGINE=InnoDB
+;
+
 # BitBruteForce-Wallet
 This is an effective script to Brute Force, the Private Key of any Bitcoin Public Address.
 
@@ -23,6 +49,7 @@ This Script creates randomly private and public addresses without checking the b
 Long story short. Create Random Public Address (RPA) and check one by one with the Public Address (PA) at the list.
 
 (Script tested on Ryzen 5 3500U - 371 K/s/Core - Used settings = 6 Cores - 6 * 371 * 60 * 60 * 24 = 192.326.400 / day = 70.199.136.000 / year)
+
 
 # REQUIREMENTS
 Python 3.x (i use 3.6.5)

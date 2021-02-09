@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 '''
-Change Cores=# of how many cores do you want to use (Script tested on i7-4500U 8 Cores - 5 K/s per Core. 3,456,000 Private Keys generated per day)
+Change Cores=# of how many cores do you want to use (371 K/s/Core - Used settings = 6 Cores - 6 * 371 * 60 * 60 * 24 = 192.326.400 addresses / day = 70.199.136.000 addresses / year)
 
 Take into account VM as well (i3 with 2 cores but 4VM -> 8 threads). More cores is just more demanding for OS scheduler
 (worth playing around, even above number of CPU cores)
@@ -44,7 +44,7 @@ def seek(r, df_handler):
 	LOG_EVERY_N = 15000
 	start_time = dt.datetime.today().timestamp()
 	i = 0
-	print("Core " + str(r) +":  Searching Private Key..")
+	print("Core " + str(r) +":  Generating Private Key..")
 	while True:
 
 		i=i+1

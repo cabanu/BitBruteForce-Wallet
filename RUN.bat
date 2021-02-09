@@ -1,3 +1,3 @@
 color 0A
-python mysql.py
+python generator.py
 

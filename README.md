@@ -24,12 +24,12 @@ Don't forget to disable the log!
 
 # MySQL:
 
-CREATE TABLE `btc` (
-	`address` VARCHAR(50) NOT NULL COLLATE 'utf8mb4_general_ci',
-	`secret` VARCHAR(100) NULL DEFAULT NULL COLLATE 'utf8mb4_general_ci',
-	PRIMARY KEY (`address`) USING BTREE,
-	UNIQUE INDEX `address` (`address`) USING BTREE,
-	INDEX `secret` (`secret`) USING BTREE
+CREATE TABLE `btc` (<br>
+	`address` VARCHAR(50) NOT NULL COLLATE 'utf8mb4_general_ci',<br>
+	`secret` VARCHAR(100) NULL DEFAULT NULL COLLATE 'utf8mb4_general_ci',<br>
+	PRIMARY KEY (`address`) USING BTREE,<br>
+	UNIQUE INDEX `address` (`address`) USING BTREE,<br>
+	INDEX `secret` (`secret`) USING BTREE<br>
 )
 COLLATE='utf8mb4_general_ci'
 ENGINE=InnoDB
@@ -54,7 +54,9 @@ Long story short. Create Random Public Address (RPA) and check one by one with t
 # REQUIREMENTS
 <li>Python 3.x (i use 3.9)</li>
 <li>pip install ecdsa</li>
-pip install base58
-pip install mysql-connector-python
-pip install pandas (If error "pip uninstall numpy" then "pip install numpy==1.19.3")
-3,000,000,000 Years
+<li>pip install base58</li>
+<li>pip install mysql-connector-python</li>
+<li>pip install pandas (If error "pip uninstall numpy" then "pip install numpy==1.19.3")</li>
+<li>working MySQL-server</li>
+<li>3,000,000,000 Years</li>
+

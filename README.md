@@ -3,7 +3,7 @@ This is a dirty solution to speed up the original script (https://github.com/Xef
 If the address isn't present in te database -> nothing happens. If the address is present in the databse -> update the private key.
 
 # Script tested on Ryzen 5 3500U
-371 K/s/Core - Used settings = 6 Cores - 6 * 371 * 60 * 60 * 24 = 192.326.400 addresses / day = 70.199.136.000 addresses / year)
+371 K/s/Core - Used settings = 6 Cores - 6 * 371 * 60 * 60 * 24 = 192.326.400 addresses / day = 70.199.136.000 addresses / year
 
 If you like it, buy me a coffee: 3Mnf8w4oPKFyknsnAwww6kaBdMxXDQc8M4
 

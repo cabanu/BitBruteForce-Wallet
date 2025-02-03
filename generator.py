@@ -1,22 +1,13 @@
 #!/usr/bin/python
 
-'''
-Change Cores=# of how many cores do you want to use (371 K/s/Core - Used settings = 6 Cores - 6 * 371 * 60 * 60 * 24 = 192.326.400 addresses / day = 70.199.136.000 addresses / year)
-Take into account VM as well (i3 with 2 cores but 4VM -> 8 threads). More cores is just more demanding for OS scheduler
-(worth playing around, even above number of CPU cores)
-'''
-
 import time
 import datetime as dt
 import os
-import multiprocessing
-from multiprocessing import Pool
 import binascii, hashlib, base58, ecdsa
-import pandas as pd
+import pyopencl as cl
+import numpy as np
 
-
-# begin mysql connector
-
+# MySQL-verbinding (indien nodig)
 import mysql.connector
 
 mydb = mysql.connector.connect(
@@ -26,63 +17,69 @@ mydb = mysql.connector.connect(
   database="btc"
 )
 
-#end mysql
+# OpenCL-initialisatie
+platforms = cl.get_platforms()
+gpu_devices = platforms[0].get_devices(device_type=cl.device_type.GPU)
+context = cl.Context(devices=gpu_devices)
+queue = cl.CommandQueue(context, gpu_devices[0])
 
+# OpenCL-programma
+kernel_code = """
+__kernel void generate_keys(__global char *output, __global ulong *counters) {
+    int gid = get_global_id(0);
+    ulong counter = counters[gid];
+    uchar priv_key[32];
+    char wif[52];
+    char pub_addr[35];
 
-def ripemd160(x):
-    d = hashlib.new('ripemd160')
-    d.update(x)
-    return d
+    // Simuleer het genereren van een privésleutel (vereist meer logica)
+    for (int i = 0; i < 32; i++) {
+        priv_key[i] = (uchar)(counter + i);
+    }
 
+    // Simuleer het genereren van een WIF en publiek adres (vereist meer logica)
+    for (int i = 0; i < 52; i++) {
+        wif[i] = 'A' + (i % 26);
+    }
+    for (int i = 0; i < 35; i++) {
+        pub_addr[i] = '1' + (i % 9);
+    }
 
-r = 0
-cores=6
+    // Sla resultaten op in de output buffer
+    for (int i = 0; i < 52; i++) {
+        output[gid * 87 + i] = wif[i];
+    }
+    for (int i = 0; i < 35; i++) {
+        output[gid * 87 + 52 + i] = pub_addr[i];
+    }
+}
+"""
 
-def seek(r, df_handler):
-	global num_threads
-	LOG_EVERY_N = 15000
-	start_time = dt.datetime.today().timestamp()
-	i = 0
-	print("Core " + str(r) +":  Generating Private Key..")
-	while True:
+# Compileer het OpenCL-programma
+program = cl.Program(context, kernel_code).build()
 
-		i=i+1
-		#generate private key , uncompressed WIF starts with "5"
-		priv_key = os.urandom(32)
-		fullkey = '80' + binascii.hexlify(priv_key).decode()
-		sha256a = hashlib.sha256(binascii.unhexlify(fullkey)).hexdigest()
-		sha256b = hashlib.sha256(binascii.unhexlify(sha256a)).hexdigest()
-		WIF = base58.b58encode(binascii.unhexlify(fullkey+sha256b[:8]))
+def generate_keys_gpu(num_keys):
+    # Buffers voor OpenCL
+    output = np.zeros(num_keys * 87, dtype=np.uint8)  # 52 voor WIF + 35 voor pub_addr
+    counters = np.arange(num_keys, dtype=np.uint64)  # Unieke tellers voor elke sleutel
 
-		# get public key , uncompressed address starts with "1"
-		sk = ecdsa.SigningKey.from_string(priv_key, curve=ecdsa.SECP256k1)
-		vk = sk.get_verifying_key()
-		publ_key = '04' + binascii.hexlify(vk.to_string()).decode()
-		hash160 = ripemd160(hashlib.sha256(binascii.unhexlify(publ_key)).digest()).digest()
-		publ_addr_a = b"\x00" + hash160
-		checksum = hashlib.sha256(hashlib.sha256(publ_addr_a).digest()).digest()[:4]
-		publ_addr_b = base58.b58encode(publ_addr_a + checksum)
-		priv = WIF.decode()
-		global pub
-		pub = publ_addr_b.decode()
-		mycursor = mydb.cursor()
-		sql = 'UPDATE btc SET secret = "'+ priv +'" WHERE address = "'+ pub +'"'
-		mycursor.execute(sql)
-		mydb.commit()
-		time_diff = dt.datetime.today().timestamp() - start_time
+    # Maak OpenCL-buffers
+    mf = cl.mem_flags
+    output_buf = cl.Buffer(context, mf.WRITE_ONLY, output.nbytes)
+    counters_buf = cl.Buffer(context, mf.READ_ONLY | mf.COPY_HOST_PTR, hostbuf=counters)
 
- 
-		if (i % LOG_EVERY_N) == 0:
-			print('Core :'+str(r)+" K/s = "+ str(i / time_diff))
-		#print ('Worker '+str(r)+':'+ str(i) + '.-  # '+pub + ' # -------- # '+ priv+' # ')
-        
+    # Voer de kernel uit
+    program.generate_keys(queue, (num_keys,), None, output_buf, counters_buf)
 
+    # Lees de resultaten terug
+    cl.enqueue_copy(queue, output, output_buf).wait()
 
-	contador=0
+    # Verwerk de resultaten (voorbeeld)
+    for i in range(num_keys):
+        wif = bytes(output[i * 87 : i * 87 + 52]).decode('utf-8')
+        pub_addr = bytes(output[i * 87 + 52 : i * 87 + 87]).decode('utf-8')
+        print(f"WIF: {wif}, PubAddr: {pub_addr}")
+
 if __name__ == '__main__':
-	jobs = []
-	df_handler = pd.read_csv(open('bit.txt', 'r'))
-	for r in range(cores):
-		p = multiprocessing.Process(target=seek, args=(r,df_handler))
-		jobs.append(p)
-		p.start()	
+    num_keys = 1000  # Aantal sleutels om te genereren
+    generate_keys_gpu(num_keys)
